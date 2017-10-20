@@ -1,4 +1,4 @@
-# uoc_mstDataSci_tcv_pra1
+﻿# uoc_mstDataSci_tcv_pra1
 Tipologia i cicle de vida de les dades - Pràctica 1
 
 L'objectiu d'aquesta pràctica és cobrir les fases de captura i emmagatzematge del cicle de vida de les dades.
@@ -13,3 +13,11 @@ A tal efecte, s'ha pensat en el següent cas:
    - A continuació es compararan les diferents publicacions per obtenir un rànquing de "neutralitat" en quant al tractament de les notícies.
 5. En fases posteriors, es podrien utilitzar dades de població, enquestes del CIS, etc. que permetin classificar les publicacions anteriormentes esmentades segons una certa tendència política, intentar segmentar els lectors, etc.
 
+Creiem que el resultat que aportaria aquesta pràctica seria molt interessant per mesurar la neutralitat dels mitjans de comunicació.
+
+S'han utilitzat les següents eines de suport:
+- Extension Google Chrome SelectorGadget
+- Extension Google Chrome WebScraper
+- Extension Google Chrome WebDeveloper
+- Client Github Desktop
+- Anaconda + Jupyter Notebook
