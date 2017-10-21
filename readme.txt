@@ -1,0 +1,1 @@
+﻿Pràctiques de les assignatures del Màster en Ciència de Dades de la UOC

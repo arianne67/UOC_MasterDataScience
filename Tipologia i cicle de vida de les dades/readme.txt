@@ -1,1 +1,1 @@
-Pr�ctiques de l'assignatura "Tipologia i Cicle de Vida de les dades"
+﻿Pràctiques de l'assignatura "Tipologia i Cicle de Vida de les dades"
