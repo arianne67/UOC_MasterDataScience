@@ -103,11 +103,50 @@ def getToday():
     from datetime import datetime
     return datetime.now().strftime('%Y%m%d_%H%M%S')
 
+
+caps = ["news_id","news_title","news_link","news_subtit","news_title_en", \
+    "polarity","subjectivity"]
+lstCSV = []
+
+df_diaris=pd.read_csv("diaris.csv",sep=";",header=0,na_values=0,keep_default_na=False)
+news = df_diaris["id"].values.tolist()
+caps.extend(news)
+
+for d in df_diaris.values.tolist():
+    oDiari = Newspaper(d[0],d[1],d[2],d[3])
+    lst = oDiari.get_articles(d[4], d[5], d[6], d[7], d[8], d[9])
+    print(d[1], len(lst))
+    lstCSV = lstCSV + lst
+    
+print("Sentiment & Similitud")
+#lstCSV = lstCSV[0:10]
+
+for r1 in lstCSV:
+    r1.extend(["-","-"])
+    for n in news:
+        r1.extend([[0,0,0]])
+    try:
+        b = TextBlob(r1[4])
+        r1[5] = round(b.sentiment.polarity,4)
+        r1[6] = round(b.sentiment.subjectivity,4)
+    except:
+        r1[5] = "-"
+    for r2 in [r for r in lstCSV if r[0]!=r1[0]]:
+        ratio = fuzz.token_set_ratio(r1[4],r2[4])
+        if ratio>60:
+            r1[7+news.index(r2[0])][0] = r1[7+news.index(r2[0])][0]+1
+            r1[7+news.index(r2[0])][1] = r1[7+news.index(r2[0])][1]+ratio
+    for i in range(0,7):
+       if r1[7+i][0]>0: r1[7+i][2] = round(r1[7+i][1]/r1[7+i][0])
+
+df = pd.DataFrame(lstCSV,columns=caps)
+df.to_csv("datasets/NEWS_"+getToday()+".csv",";","index=False")
+
+
+"""
 news = ["EP", "LV", "20M", "PA", "EM", "LR", "ABC", "ARA", "PAV"]
 caps = ["news_id","news_title","news_link","news_subtit","news_title_en", \
     "polarity","subjectivity","EP","LV","20M","PA","EM","LR","ABC","ARA","PAV"]
-
-lstCSV = []
 
 oEP = Newspaper("EP","EL PERIÓDICO","http://www.elperiodico.com/es/","es")
 lst = oEP.get_articles("article", "", "", "h2", "", "p")
@@ -154,28 +193,6 @@ lst = oPAV.get_articles("div", "class", "article", "", "", "p")
 print("PUNT AVUI:", len(lst))
 lstCSV = lstCSV + lst
 
-print("Sentiment & Similitud")
-#lstCSV = lstCSV[0:50]
-
-for r1 in lstCSV:
-    r1.extend(["-","-",[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]])
-    try:
-        #b = (TextBlob(r1[1])).translate(to="en")
-        #r1[5] = b.title()
-        b = TextBlob(r1[4])
-        r1[5] = round(b.sentiment.polarity,4)
-        r1[6] = round(b.sentiment.subjectivity,4)
-    except:
-        r1[5] = "-"
-    for r2 in [r for r in lstCSV if r[0]!=r1[0]]:
-        ratio = fuzz.token_set_ratio(r1[4],r2[4])
-        if ratio>60:
-            r1[7+news.index(r2[0])][0] = r1[7+news.index(r2[0])][0]+1
-            r1[7+news.index(r2[0])][1] = r1[7+news.index(r2[0])][1]+ratio
-    for i in range(0,7):
-       if r1[7+i][0]>0: r1[7+i][2] = round(r1[7+i][1]/r1[7+i][0])
-
-df = pd.DataFrame(lstCSV,columns=caps)
-df.to_csv("datasets/NEWS_"+getToday()+".csv",";","index=False")
+"""
 
 
