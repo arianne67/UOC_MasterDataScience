@@ -1,25 +1,12 @@
 
 # coding: utf-8
 
-# In[1]:
-
-
 from classes.WebScraping_class import WebScraping_HTML_XML
-#import csv
 import pandas as pd
 
-from textblob import TextBlob, Word, Blobber
-#from textblob.classifiers import NaiveBayesClassifier
-#from textblob.taggers import NLTKTagger
-#import nltk
-
+from textblob import TextBlob
 from fuzzywuzzy import fuzz
-from fuzzywuzzy import process
-
 from googletrans import Translator
-
-#import indicoio
-#indicoio.config.api_key = "7a4879025797243e81860392cdc7e4ff"
 
 #=======================================================
 #Classe per realitzar WebScraping per formats JSON i CSV
@@ -58,14 +45,18 @@ class Newspaper:
     def get_parser(self):
         return self.__oWP
     
-    #Mètode per obrir i llegir el recurs URL
-    #tag_art: etiqueta HTML on es troba l'article (habitualment <article>)
-    #tag_flt: atribut de "tag_art" on es fa el filtre
-    #str_atr: text per filtrar l'atribut "tag_flt"
-    #tag_cont: etiqueta HTML on hi ha text+link de l'article 
-    #str_cont: text per filtrar l'etiqueta "tag_cont" 
-    #tag_sum: etiqueta HTML on -opcionalment- podem trobar sumari/epígraf d'article
-    #
+    #--------------------------------------------------------------------------
+    # Mètode per obrir i llegir el recurs URL
+    #--------------------------------------------------------------------------
+    # tag_art: etiqueta HTML on es troba l'article (habitualment <article>)
+    # tag_flt: atribut de "tag_art" on es fa el filtre
+    # str_atr: text per filtrar l'atribut "tag_flt"
+    # tag_cont: etiqueta HTML on hi ha text+link de l'article 
+    # str_cont: text per filtrar l'etiqueta "tag_cont" 
+    # tag_sum: etiqueta on -opcionalment- podem trobar sumari/epígraf d'article
+    #--------------------------------------------------------------------------
+    # Retorn: llista contening els articles
+    #--------------------------------------------------------------------------
     def get_articles(self, tag_art, tag_flt, str_flt, tag_cont, str_cont, tag_sum=""):
         oArt = self.__oWP.getWebdata(tag_art,"all",str_flt,tag_flt)
         oTrans = Translator()
@@ -85,14 +76,13 @@ class Newspaper:
                 n_sum = ""
                 if tag_sum>"" and elem.find(tag_sum): 
                     n_sum = elem.find(tag_sum).get_text().strip('\r\n\t ')
-                #n_rel = ""
             except:
                 n_tit_l = ""
                 n_tit_t = ""
-                n_sum = ""
-                #n_rel = ""
-
-            if (n_tit_l>"" and n_tit_t>""):
+                n_sum = ""                
+            # Si les notícies no venen originalment en anglés, traduïr
+            # Utilitzem la llibreria "googletrans"
+            if (n_tit_l>"" and n_tit_t>"" and self.__lng!="en"):
                 tit_t_en = oTrans.translate(n_tit_t, src=self.__lng, dest='en').text
                 self.__articles.append([self.__id,n_tit_t,n_tit_l,n_sum,tit_t_en])
         return self.__articles
@@ -108,10 +98,28 @@ caps = ["news_id","news_title","news_link","news_subtit","news_title_en", \
     "polarity","subjectivity"]
 lstCSV = []
 
+#
+# Recuperem continguts de l'arxiu CSV "diaris.csv" que conté les dades base de l'estudi:
+# - id: identificador del diari a tractar (ej: LV -> La Vanguardia)
+# - nom: del diari
+# - url: del diari digital
+# - lng: idioma del diari
+# - tag: etiqueta utilitzada per guardar els articles
+# - tag_attr: atribut per filtrar article (opcional)
+# - tag_attr_str: contingut atribut "tag_attr"
+# - tag_cont: etiqueta on es guarda el texte de la notícia (opcional)
+# - tag_cont_str: contingut atribut "tag_cont"
+# - tag_sum: etiqueta on es guarda el sumari de la notícia (opcional)
+# - n_lectors: nombre de lectors diaris (2016, AIMC)
+#
 df_diaris=pd.read_csv("diaris.csv",sep=";",header=0,na_values=0,keep_default_na=False)
 news = df_diaris["id"].values.tolist()
 caps.extend(news)
 
+#
+# Procés de WebScraping
+# L'objecte "oDiari" emmagatzema les dades recuperades (HTML)
+#
 for d in df_diaris.values.tolist():
     oDiari = Newspaper(d[0],d[1],d[2],d[3])
     lst = oDiari.get_articles(d[4], d[5], d[6], d[7], d[8], d[9])
@@ -119,80 +127,38 @@ for d in df_diaris.values.tolist():
     lstCSV = lstCSV + lst
     
 print("Sentiment & Similitud")
-#lstCSV = lstCSV[0:10]
-
+#
+# Recorregut de totes les notícies per associar indicadors:
+# - Sentiment: ús de llibreria "TextBlob"
+# - Similitud: ús de la llibreria "fuzzywuzzy"
+#
 for r1 in lstCSV:
-    r1.extend(["-","-"])
+    
+    # Afegim columnes per guardar polaritat i subjectivitat
+    r1.extend(["",""])
+    
+    # Afegim columnes per guardar similitud [i,j] on:
+    # i = nombre de notícies al diari "n" amb un grau de similitud > 60%
+    # j = ratio (%) de similitud de la notícia respecte al diari "n"
     for n in news:
-        r1.extend([[0,0,0]])
+        r1.extend([[0,0]])
     try:
         b = TextBlob(r1[4])
         r1[5] = round(b.sentiment.polarity,4)
         r1[6] = round(b.sentiment.subjectivity,4)
     except:
         r1[5] = "-"
+        r1[6] = "-"
     for r2 in [r for r in lstCSV if r[0]!=r1[0]]:
         ratio = fuzz.token_set_ratio(r1[4],r2[4])
         if ratio>60:
             r1[7+news.index(r2[0])][0] = r1[7+news.index(r2[0])][0]+1
             r1[7+news.index(r2[0])][1] = r1[7+news.index(r2[0])][1]+ratio
     for i in range(0,7):
-       if r1[7+i][0]>0: r1[7+i][2] = round(r1[7+i][1]/r1[7+i][0])
+       if r1[7+i][0]>0: r1[7+i][1] = round(r1[7+i][1]/r1[7+i][0])
 
+# Guardem la llista en una estructura DataFrame (llibreria "pandas")
 df = pd.DataFrame(lstCSV,columns=caps)
-df.to_csv("datasets/NEWS_"+getToday()+".csv",";","index=False")
-
-
-"""
-news = ["EP", "LV", "20M", "PA", "EM", "LR", "ABC", "ARA", "PAV"]
-caps = ["news_id","news_title","news_link","news_subtit","news_title_en", \
-    "polarity","subjectivity","EP","LV","20M","PA","EM","LR","ABC","ARA","PAV"]
-
-oEP = Newspaper("EP","EL PERIÓDICO","http://www.elperiodico.com/es/","es")
-lst = oEP.get_articles("article", "", "", "h2", "", "p")
-print("EL PERIÓDICO", len(lst))
-lstCSV = lstCSV + lst
-
-oLV = Newspaper("LV","LA VANGUARDIA","http://www.lavanguardia.com/","es")
-lst = oLV.get_articles("article", "", "", "h1", "", "")
-print("LA VANGUARDIA:", len(lst))
-lstCSV = lstCSV + lst
-
-o20m = Newspaper("20M","20 MINUTOS","http://www.20minutos.es/","es")
-lst = o20m.get_articles("h2", "", "", "", "", "")
-print("20 MINUTOS:", len(lst))
-lstCSV = lstCSV + lst
-
-oPA = Newspaper("PA","EL PAÍS","https://elpais.com/","es")
-lst = oPA.get_articles("article", "", "", "h2", "","p")
-print("EL PAÍS:", len(lst))
-lstCSV = lstCSV + lst
-
-oEM = Newspaper("EM","EL MUNDO","http://www.elmundo.es/","es")
-lst = oEM.get_articles("article", "", "", "h3", "", "p")
-print("EL MUNDO:", len(lst))
-lstCSV = lstCSV + lst
-
-oLR = Newspaper("LR","LA RAZÓN","http://www.larazon.es/","es")
-lst = oLR.get_articles("article", "", "", "h2", "", "p")
-print("LA RAZÓN:", len(lst))
-lstCSV = lstCSV + lst
-
-oABC = Newspaper("ABC","ABC","http://www.abc.es/","es")
-lst = oABC.get_articles("article", "", "", "h1", "", "p")
-print("ABC:", len(lst))
-lstCSV = lstCSV + lst
-
-oARA = Newspaper("ARA","ARA.CAT","https://www.ara.cat/","ca")
-lst = oARA.get_articles("h2", "", "", "", "", "p")
-print("ARA.CAT:", len(lst))
-lstCSV = lstCSV + lst
-
-oPAV = Newspaper("PAV","PUNT AVUI","http://www.elpuntavui.cat/barcelona.html","ca")
-lst = oPAV.get_articles("div", "class", "article", "", "", "p")
-print("PUNT AVUI:", len(lst))
-lstCSV = lstCSV + lst
-
-"""
-
+# Guardem la llista en un fitxer CSV (dataset resultat)
+df.to_csv("datasets/NEWS_"+getToday()+".csv",sep=";",index=False,decimal=",")
 
