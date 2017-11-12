@@ -1,4 +1,3 @@
-https://github.com/arianne67/UOC_MasterDataScience/blob/master/Tipologia%20i%20cicle%20de%20vida%20de%20les%20dades/PRA1%20-%20WebScraping%20-%20News%20headlines/logo.png
 
 Estructura de NEWS_YYYYMMDD_HHMMSS.CSV:
 - id: identificador del diari
