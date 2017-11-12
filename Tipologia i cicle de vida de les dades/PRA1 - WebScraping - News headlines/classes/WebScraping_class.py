@@ -48,7 +48,9 @@ class WebScraping_HTML_XML:
     def get_parser(self):
         return self.__parser
     
-    #Mètode per obrir i llegir el recurs URL
+    #----------------------------------------------------------------------
+    # Mètode per obrir i llegir el recurs URL
+    #----------------------------------------------------------------------
     def openWebdoc(self):
         try:
             if self.__url[:4]=="http":
@@ -59,7 +61,9 @@ class WebScraping_HTML_XML:
             return False
         return True
 
+    #----------------------------------------------------------------------
     #Mètode per descarregar el recurs
+    #----------------------------------------------------------------------
     def saveWebdoc (self,fic):
         if (len(self.__contents)>0):
             f = open(fic, "wt")
@@ -70,11 +74,17 @@ class WebScraping_HTML_XML:
         else:
             return False
 
-    #Mètode per obtenir dades
-    #tag: etiqueta HTML/XML
-    #scope: recuperar nivell actual("") o actual+descendents ("all")
-    #str: filtre atribut
-    #strTag: nom atribut
+    #----------------------------------------------------------------------
+    # Mètode per obtenir dades
+    #----------------------------------------------------------------------
+    # tag: etiqueta HTML/XML on es troben les notícies
+    # scope: recuperar nivell actual("") o actual+descendents ("all")
+    # strTag: nom atribut de l'etiqueta "tag" per filtrar
+    # str: contingut atribut "strTag" per filtrar
+    # isRecursive: si és True, troba la primera ocurrència i les següents
+    #----------------------------------------------------------------------
+    #Retorn: llista objectes BeautifulSoup
+    #
     def getWebdata(self,tag,scope,str,strTag,isRecursive=True):
         try:
             bsObj = BeautifulSoup(self.__contents, self.__parser)
