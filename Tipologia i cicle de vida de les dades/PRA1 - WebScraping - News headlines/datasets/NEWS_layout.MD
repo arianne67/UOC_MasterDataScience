@@ -1,3 +1,4 @@
+![Headlines_Analysis_logo](https://github.com/arianne67/UOC_MasterDataScience/blob/master/Tipologia%20i%20cicle%20de%20vida%20de%20les%20dades/PRA1%20-%20WebScraping%20-%20News%20headlines/logo_sml.png)
 
 El nostre dataset s'anomena **NEWS_YYYYMMDD_HHMMSS.CSV**, i conté una llista de notícies extretes de les webs de diferents periòdics generalistes mitjançant tècniques de WebScraping.
 
