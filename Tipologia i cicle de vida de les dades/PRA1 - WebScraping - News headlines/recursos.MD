@@ -14,6 +14,5 @@
 - **Googletrans** [[web](https://pypi.python.org/pypi/googletrans)]: llibreria que permet la traducció de les notícies a l'anglés (les llibreries anteriorment esmentades es basen en aquest idioma) al mateix temps que llegim la notícia.
 
 ## Fonts d'informació
-- http://www.bib.uab.es/comunica/guiaud.htm#cat
 - [[Informe de la Comunicació a Catalunya 2015-2016](http://incom.uab.cat/informe/download/informedelacomunicacioacatalunya_20152016.pdf)]: informe anual publicat per l'UAB, on hem trobat l'audiència (nombre de lectors diaris) per cada periòdic analitzat.
 
