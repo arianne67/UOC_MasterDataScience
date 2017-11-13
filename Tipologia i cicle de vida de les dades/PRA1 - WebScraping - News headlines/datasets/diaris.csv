@@ -1,0 +1,10 @@
+﻿id;nom;url;lng;tag;tag_attr;tag_attr_str;tag_cont;tag_cont_str;tag_sum;n_lectors
+LV;LA VANGUARDIA;http://www.lavanguardia.com/;es;article;;;h1;;;558000
+EP;EL PERIÓDICO;http://www.elperiodico.com/es/;es;article;;;h2;;p;419000
+20M;20 MINUTS;http://www.20minutos.es/;es;h2;;;;;;157000
+PAV;EL PUNT AVUI;http://www.elpuntavui.cat/barcelona.html;ca;div;class;article;;;;115000
+ARA;ARA.CAT;https://www.ara.cat/;ca;h2;;;;;;93000
+PA;EL PAÍS;https://elpais.com/;es;article;;;h2;;p;90000
+EM;EL MUNDO;http://www.elmundo.es/;es;article;;;h3;;p;27000
+LR;LA RAZÓN;http://www.larazon.es/;es;article;;;h2;;p;12000
+ABC;ABC;http://www.abc.es/;es;article;;;h1;;p;10000
