@@ -112,7 +112,7 @@ lstCSV = []
 # - tag_sum: etiqueta on es guarda el sumari de la notícia (opcional)
 # - n_lectors: nombre de lectors diaris (2016, AIMC)
 #
-df_diaris=pd.read_csv("diaris.csv",sep=";",header=0,na_values=0,keep_default_na=False)
+df_diaris=pd.read_csv("datasets/diaris.csv",sep=";",header=0,na_values=0,keep_default_na=False)
 news = df_diaris["id"].values.tolist()
 caps.extend(news)
 
