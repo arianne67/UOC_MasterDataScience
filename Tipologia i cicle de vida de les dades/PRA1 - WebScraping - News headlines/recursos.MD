@@ -1,8 +1,8 @@
 
-S'han utilitzat les següents eines de suport:
-- Extensió **Google Chrome WebScraper** [[web](http://webscraper.io/)]: Permet recòrrer l'estructura de la pàgina de forma interactiva, la qual cosa permet facilitar la localització de les etiquetes que contenen les notícies, en el nostre cas.
-- Client Github Desktop [[web](https://desktop.github.com/)]
-- IDE para Python SPYDER-3
+##Eines de suport:
+- Extensió **Google Chrome WebScraper** [[web](http://webscraper.io/)]: permet recòrrer l'estructura de la pàgina de forma interactiva, la qual cosa permet facilitar la localització de les etiquetes que contenen les notícies, en el nostre cas.
+- Client **Github Desktop** [[web](https://desktop.github.com/)]: facilita la gestió de fitxers i carpetes a Github mitjançant la clonació del repositori al nostre ordinador. Tanmateix, actua com un __backup__.
+- IDE para Python **SPYDER-3** [[web](https://github.com/spyder-ide/spyder)]: IDE popular entre la comunitat de programadors de Phyton.
 
 Llibreries Python utilitzades:
 - https://www.crummy.com/software/BeautifulSoup/bs4/doc/#
