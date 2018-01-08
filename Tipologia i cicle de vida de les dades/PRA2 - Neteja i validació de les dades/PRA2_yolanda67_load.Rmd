@@ -8,6 +8,15 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+__1. Descripció del dataset. Per què és important i quina pregunta/problema pretèn respondre?__
+
+Per aquesta pràctica prepararem un *dataset* que recopilarà informació de pel·lícules de cinema 
+des de diferents fonts:
+- IMDB: base del dataset
+- BoxOffice (Mojo, The Numbers): dades de recaptació. Ens recolzarem en el package "boxoffice":
+  https://cran.r-project.org/web/packages/boxoffice/index.html
+- TMDB (The Movie DB): dataset pre-processat de Kaggle ()
+  https://www.kaggle.com/stephanerappeneau/350-000-movies-from-themoviedborg
 
 ******
 ## Preparació entorn
