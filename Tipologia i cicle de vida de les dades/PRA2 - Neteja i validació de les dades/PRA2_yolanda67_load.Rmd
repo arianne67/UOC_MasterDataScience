@@ -1,0 +1,87 @@
+---
+title: "PRA2_yolanda67_load: Càrrega de dades"
+author: "Yolanda Sánchez"
+date: "8 Gener de 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+******
+## Preparació entorn
+******
+
+* Versión de R instalada: 3.4.1
+```{r Label_0100, eval=TRUE, echo=TRUE, warning=FALSE }
+
+# Establecer directorio de trabajo
+setwd("C:/UOC/Màster Data Science/semestre-1/Tipologia i cicle de vida de les dades/Bloc 3/Practica 2/src")
+
+```
+
+* Càrrega de llibreries 
+
+```{r Label_LoadLibraries, eval=TRUE, echo=TRUE, warning=FALSE }
+
+require(dplyr)
+require(R.utils)
+require(boxoffice)
+
+```
+
+## Informació IMDB
+https://datasets.imdbws.com/
+
+
+```{r Label_LoadIMDBinfo, eval=TRUE, echo=TRUE, warning=FALSE }
+
+#Descàrrega i descompressió fitxer principal (title.basics)
+download.file (url="https://datasets.imdbws.com/title.basics.tsv.gz", destfile="title.basics.tsv.gz")
+gunzip("title.basics.tsv.gz", overwrite=TRUE, remove=FALSE)
+
+#Descàrrega i descompressió ratings (title.ratings)
+download.file (url="https://datasets.imdbws.com/title.ratings.tsv.gz", destfile="title.ratings.tsv.gz")
+gunzip("title.ratings.tsv.gz", overwrite=TRUE, remove=FALSE)
+
+```
+
+## Informació recaptació
+https://cran.r-project.org/web/packages/boxoffice/index.html
+
+```{r Label_LoadBoxOfficeRevenues, eval=TRUE, echo=TRUE, warning=FALSE }
+
+#Recollir els guanys des de la web de Box Office Mojo
+
+df_boxoffice <- boxoffice("2017-12-31")
+
+for (y in 1900:2017)
+{
+  for (m in 1:12)
+  {
+    dt = as.Date(paste(as.character(y),"-",as.character(m),"-01",sep=""))-1
+    df <- boxoffice(dt)
+    df_boxoffice<-rbind(df_boxoffice, df)
+  }
+}
+
+write.table(df_boxoffice, file = "BoxOffice.csv",row.names=FALSE, na="",col.names=TRUE, sep=";")
+
+# Obtenim per cada pel·lícula l'última recaptació disponible i la deixem al dataset "BoxOffice_max.csv"
+
+df_boxoffice_max = group_by(df_boxoffice, movie_name)
+df_boxoffice_max <- summarize(df_boxoffice_max, max.gross_to_date = max(gross_to_date))
+write.table(df_boxoffice_max, file = "BoxOffice_max.csv",row.names=FALSE, na="", col.names=TRUE, sep=";")
+head(df_boxoffice_max)
+
+```
+
+## Informació TMDB (The Movie DB)
+https://www.kaggle.com/stephanerappeneau/350-000-movies-from-themoviedborg
+Dataset: AllMoviesDetailsCleaned.csv
+
+``
+
+
+
