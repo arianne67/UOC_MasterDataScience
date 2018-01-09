@@ -9,6 +9,29 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+__3. Anàlisi de les dades__
+
+  __3.1 Selecció dels grups de dades que es volen analitzar/comparar__
+  __3.2 Comprovació de la normalitat i homogeneïtat de la variància. Si és necessari (i possible), aplicar les transformacions que normalitzin les dades.__
+  __3.3 Aplicació de proves estadístiques (tantes com sigui possible) per comparar els grups de dades.__
+    
+    Veure cadascun dels apartats a continuació, on hi ha els comentaris que responen aquestes preguntes.
+    En el cas de la recaptació (revenue) es força clar que es necessita realitzar una normalització de dades.
+
+__4. Representació dels Resultats a partir de taules i gràfiques __
+  
+  Veure cadascun dels apartats a continuació.
+  
+__5. Resolució del problema. A partir dels resultats obtinguts, quines són les conclusions? Els resultats permeten respondre al problema?__
+
+  Es problema no s'arriba a resoldre satisfactòriament, ja que la qualitat de les dades no és molt bona i es perden molts continguts tot i haver fet una neteja exhaustiva de les dades.
+  No obstant, podem comentar:
+  - Estadístiques bàsiques basadas en mesures estàndard: en cap cas tenim una distribució normal (o propera). Les dades no estan normalitzades i ens trobem amb molts valors extrems que - no obstant - hem de considerar.
+  - Correlació: els resultats s'ajusten al que és d'esperar. Tot i que hi ha veus que afirmen que hi ha una relació directa entre pressupost i recaptació, el cert és que caldria obtenir una mostra molt esbiaixada (basada en un període concret, de determinats estudis cinematogràfics, amb la participació de determinats actors/actrius) per arribar a aquesta conclusió.
+  - Anàlisi de gèneres / anys-dècades: no hi ha dubte que la temàtica i gènere del seté art està fortament influenciat per l'entorn socio-econòmic. Estudiant la franja de 1940 a 1950 s'observa una majoria de pel·licules d'acció i/o biografies i documentals, coincidint amb la Segona Guerra Mundial.
+
+
+
 ******
 ## Preparació entorn
 ******
@@ -34,6 +57,9 @@ library(corrplot)
 
 ## Estadístiques bàsiques
 
+Aquí veurem si les mètriques tractades es desvien del centre (mediana molt diferent de la mitjana).
+Tanmateix observant l'histograma ens podrem fer una idea de la __distribució__ que segueixen les dades.
+
 
 ```{r Label_BasicsStats, eval=TRUE, echo=TRUE, warning=FALSE }
 
@@ -43,6 +69,9 @@ print(paste("Nombre d'observacions:",nrow(df)))
 
 #Creació Dataframe per estadístiques relacionades amb Pressupost (budget) i Recaptació (Revenue)
 df_revenue_budget <- subset(df, revenue>0 & budget>0)
+df_revenue_ratings <- subset(df, revenue>0 & averageRating>0.0)
+df_numVotes_ratings <- subset(df, numVotes>0 & averageRating>0.0)
+
 
 print(paste("Mean:",mean(df_revenue_budget$revenue)))
 print(paste("Median:",median(df_revenue_budget$revenue)))
@@ -54,42 +83,48 @@ summary(df_revenue_budget$revenue);
 
 #Histograma de Recaptació
 hist(df_revenue_budget$revenue, main="Recaptació", xlab="revenue", col="green", breaks=6);
-lines(density(df_revenue_budget$revenue));
-
-hist(df_revenue_budget$revenue, main="Recaptació",  
-     xlab="revenue", 
-     border="blue", 
-     col="green", 
-     las=0.5, 
-     breaks=6, 
-     prob = TRUE);
-lines(density(df_revenue_budget$revenue));
+#lines(density(df_revenue_budget$revenue));
 
 ```
+
+## Correlació 
+
+Amb la __correlació__ descobrirem si hi ha una relación linial entre dues variables.
+A més, la correlació és una mesura normalitzada.
+
+Mirant el __coeficient de correlació__:
+- quant més s'apropa a __1__ implica que hi ha una relació més forta i positiva entre les dues variables.
+- quant més s'apropa a __-1__ implica que hi ha una relació més forta i negativa entre les dues variables.
+
+1) Correlació Pressupost-Recaptació: no hi ha una relació clara i està fortament afectat per la base (període) seleccionat.
+   
+2) Correlació Ratings-Recaptació
+
 
 ```{r Label_Correlation, eval=TRUE, echo=TRUE, warning=FALSE }
 
 #Volem veure si hi ha correlació entre la recaptació (revenue) i el pressupost (budget)
 M <- data.frame(df_revenue_budget$revenue, df_revenue_budget$budget)
-print(cor(df_revenue_budget$budget, df_revenue_budget$revenue))
-corrplot(cor(M), method="ellipse")
+print(cor(df_revenue_budget$revenue, df_revenue_budget$budget))
+corrplot(cor(M), method="circle")
 plot(df_revenue_budget$budget, df_revenue_budget$revenue, xlab="Budget", ylab="Revenue")
+
+#Volem veure si hi ha correlació entre els ratings i la recaptació (revenue) 
+M <- data.frame(df_revenue_ratings$revenue, df_revenue_ratings$averageRating)
+print(cor(M))
+corrplot(cor(M), method="circle")
+plot(df_revenue_ratings$averageRating, df_revenue_ratings$revenue, xlab="Ratings", ylab="Revenue")
 
 ```
 
+## Anàlisi de Gèneres per any/dècada
+
+
 ```{r Label_GeneresDecada, eval=TRUE, echo=TRUE, warning=FALSE }
 
-#Recupera lista de gèneres
-genres <- data.frame(unique(df[,4]), stringsAsFactors = FALSE)
-dfg <- read.table(text = "", colClasses = c("character"), col.names = c("genre"));
-g<-c("genre")
-for (row in genres)
-{
-  g <- c(g,unlist(strsplit(as.character(row),",")))
-}
-genres<-unique(g)
-
+#Si analitzem molts registres, és millor analitzar per dècada
 #df_byGenreDecade = group_by(df, genres, (releaseYear %/% 10) * 10)
+
 df_byGenreDecade = group_by(df, mainGenre, releaseYear)
 df_byGenreDecade <- summarize(df_byGenreDecade, total.count=n())
 names(df_byGenreDecade)[2]<-"decade"
