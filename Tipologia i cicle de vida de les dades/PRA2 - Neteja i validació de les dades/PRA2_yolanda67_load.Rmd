@@ -12,16 +12,17 @@ __1. Descripció del dataset. Per què és important i quina pregunta/problema pret
 
 Per aquesta pràctica prepararem un *dataset* que recopilarà informació de pel·lícules de cinema 
 des de diferents fonts:
-- IMDB: base del dataset
-- BoxOffice (Mojo, The Numbers): dades de recaptació. Ens recolzarem en el package "boxoffice":
-  https://cran.r-project.org/web/packages/boxoffice/index.html
-- TMDB (The Movie DB): dataset pre-processat de Kaggle ()
+- __IMDB:__ base del dataset. Es descarrega sempre l'última versió.
+- __BoxOffice__ (Mojo, The Numbers): dades de recaptació. Ens recolzarem en el package "boxoffice":
+  https://cran.r-project.org/web/packages/boxoffice/index.html. Hi ha dades disponibles des de 1982.
+- __TMDB__ (The Movie DB): dataset pre-processat de Kaggle amb dades actualitzades fins 08/2017.
   https://www.kaggle.com/stephanerappeneau/350-000-movies-from-themoviedborg
   
 Es vol demostrar/respondre else següents punts: 
 1) En funció de la situació socio-política, es produeixen amb més freqüència determinats gèneres
    (exemple: durant la primera guerra mundial predomina el gènere d'acció i documental).
 2) Existeix una correlació entre Pressupost i Recaptació?
+3) Existeix una correlació entre Recaptació i Ratings?
 
 ******
 ## Preparació entorn
