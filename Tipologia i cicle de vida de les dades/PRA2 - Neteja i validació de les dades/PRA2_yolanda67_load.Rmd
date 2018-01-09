@@ -17,6 +17,11 @@ des de diferents fonts:
   https://cran.r-project.org/web/packages/boxoffice/index.html
 - TMDB (The Movie DB): dataset pre-processat de Kaggle ()
   https://www.kaggle.com/stephanerappeneau/350-000-movies-from-themoviedborg
+  
+Es vol demostrar/respondre else següents punts: 
+1) En funció de la situació socio-política, es produeixen amb més freqüència determinats gèneres
+   (exemple: durant la primera guerra mundial predomina el gènere d'acció i documental).
+2) Existeix una correlació entre Pressupost i Recaptació?
 
 ******
 ## Preparació entorn
