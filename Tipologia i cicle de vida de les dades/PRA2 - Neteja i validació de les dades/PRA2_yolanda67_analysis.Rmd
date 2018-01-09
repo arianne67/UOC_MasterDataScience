@@ -64,7 +64,7 @@ Tanmateix observant l'histograma ens podrem fer una idea de la __distribució__ q
 ```{r Label_BasicsStats, eval=TRUE, echo=TRUE, warning=FALSE }
 
 #Càrrega del fitxer principal (title.basics)
-df <- read.csv(file="MoviesInfo2.tsv", header=TRUE, sep="\t", quote="\"", fill=TRUE, stringsAsFactors=FALSE)
+df <- read.csv(file="MoviesInfo.tsv", header=TRUE, sep="\t", quote="\"", fill=TRUE, stringsAsFactors=FALSE)
 print(paste("Nombre d'observacions:",nrow(df)))
 
 #Creació Dataframe per estadístiques relacionades amb Pressupost (budget) i Recaptació (Revenue)
