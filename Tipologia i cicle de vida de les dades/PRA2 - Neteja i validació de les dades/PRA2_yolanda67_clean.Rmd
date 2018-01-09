@@ -1,0 +1,242 @@
+---
+title: "PRA2_yolanda67_clean: Neteja de dades"
+author: "Yolanda Sánchez"
+date: "8 Gener de 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+__2. Neteja de les dades__
+
+  __2.1 Selecció de les dades d'interés a analitzar. Quins són els camps més rellevants per tal de respondre al problema?__
+    Les fonts de dades s'han explicat al font "PRA2_yolanda67_load.Rmd".
+    Pel que fa als camps rellevants:
+    IMDB: 
+    - ID (necessari per enllaçar amb altres datasets)
+    - Títol primari
+    - Gèneres: bàsic per un dels nostres objectius (veure punt 1). Extreurem el primer de la llista com principal.
+    - StartYear: útil per analitzar per any/dècada.
+    - Rating i nombre de vots.
+    TMDB:
+    - ID (necesssari per anllaçar amb IMDB)
+    - Overview (sumari, trama) i Tagline (lema publicitari): no l'utilitzem en els casos que ens ocupa, 
+    però considerem interessant guardar-los per anàlisi de sentiment.
+    - Budget (pressupost)
+    - Revenue: agafarem la dada d'aquest dataset si no es pot obtenir de BOXOFFICE
+    BOXOFFICE:
+    - Títol (necessari per enllaçar amb IMDB, ja que no hi ha ID)
+    - Revenue (recaptació).
+    
+  __2.2 Les dades contenen zeros o elements buits? I valors extrems? Com gestionaries cadascun d'aquests casos?__
+    En general:
+    - Descartem els registres complets on hi ha valors NA o inconsistents en columnes fonamentals.
+    - En el cas de les dates (TMDB.StartDate), les convertim a tipus Date i per tant les verifiquem.
+    - En funció del tipus d'anàlisi que necessitem, filtrarem el dataset descartant registres 
+    que no tinguin els valors que ens interessen.
+    - Es donen valors extrems en el cas de la recaptació, però s'han de considerar ja que són precisament 
+    els més significatius.
+
+******
+## Preparació entorn
+******
+
+* Versión de R instalada: 3.4.1
+```{r Label_0100, eval=TRUE, echo=TRUE, warning=FALSE }
+
+# Establecer directorio de trabajo
+setwd("C:/UOC/Màster Data Science/semestre-1/Tipologia i cicle de vida de les dades/Bloc 3/Practica 2/src")
+
+```
+
+* Càrrega de llibreries 
+
+```{r Label_LoadLibraries, eval=TRUE, echo=TRUE, warning=FALSE }
+
+require(dplyr)
+require(R.utils)
+
+```
+
+## Informació IMDB
+https://datasets.imdbws.com/
+http://www.imdb.com/interfaces/
+
+```{r Label_LoadIMDBinfo, eval=TRUE, echo=TRUE, warning=FALSE }
+
+#Posem un rang de dates per minvar el nombre de registres.
+yearIni <- 1940
+yearEnd <- 1960
+
+#Càrrega del fitxer principal (title.basics)
+df <- read.csv(file="title.basics.tsv", header=TRUE, sep="\t", stringsAsFactors=FALSE)
+print(paste("Nombre files originals de IMDB.title.basics:",nrow(df)))
+
+#Filtrem le files del dataset per considerar només pel·lícules
+df_imdb_main <- subset(df,titleType=="movie" & startYear>=yearIni & startYear<=yearEnd & genres!="\\N")
+print(paste("PEL·LÍCULES produïdes des del 1990 AMB GENRE vàlid de IMDB.titles.basics:",nrow(df_imdb_main)))
+rm(df)
+head(df_imdb_main)
+
+#Descàrrega i descompressió ratings (title.ratings)
+df_imdb_ratings <- read.csv(file="title.ratings.tsv", header=TRUE, sep="\t", stringsAsFactors=FALSE)
+head(df_imdb_ratings)
+
+```
+
+## Informació recaptació
+https://cran.r-project.org/web/packages/boxoffice/index.html
+
+```{r Label_LoadBoxOfficeRevenues, eval=TRUE, echo=TRUE, warning=FALSE }
+
+df_boxoffice_max <- read.csv(file="BoxOffice_max.csv", header=TRUE, sep=";", stringsAsFactors=FALSE)
+head(df_boxoffice_max)
+
+```
+
+## Informació TMDB (The Movie DB)
+https://www.kaggle.com/stephanerappeneau/350-000-movies-from-themoviedborg
+Dataset: AllMoviesDetailsCleaned.csv
+
+```{r Label_LoadMovieDBcleaned, eval=TRUE, echo=TRUE, warning=FALSE }
+
+df <- read.csv(file="AllMoviesDetailsCleaned.csv", header=TRUE, sep=";", stringsAsFactors=FALSE)
+print(paste("Nombre files originals de TMDB.AllMoviesDetailsCleaned.csv:",nrow(df)))
+
+#Filtrem le files del dataset per considerar només pel·lícules estrenades
+df_moviedb_cleaned <- subset(df,status=="Released")
+print(paste("Pel·lícules ESTRENADES de TMDB.AllMoviesDetailsCleaned.csv:",nrow(df_moviedb_cleaned)))
+rm(df)
+head(df_moviedb_cleaned)
+
+```
+
+## Unifiquem la informació en un únic dataset
+
+```{r Label_LoadIMDBmain, eval=TRUE, echo=TRUE, warning=FALSE }
+
+colClasses = c("character", "integer", "character", "character", "character", "logical", 
+  "integer", "Date", "character", "character", 
+  "double", "double", "double", "integer");
+col.names = c("imdb_id", "tmdb_id", "primaryTitle", "mainGenre", "genres", "isAdult", 
+  "releaseYear", "releaseDate", "overview", "tagline", 
+  "budget", "revenue", "averageRating", "numVotes");
+
+# DataFrame buit amb estructura
+dfr <- read.table(text = "", colClasses = colClasses, col.names = col.names);
+
+#Recorregut del dataframe base (df_imdb_main)
+#nrow(df_imdb_main)
+for (row in 1:2000)
+{
+
+  #Informació base de IMDB
+  tryCatch (
+    {
+      imdb_id <- df_imdb_main[row,1];
+      primaryTitle <- as.character(df_imdb_main[row,3]);
+      genres <- as.character(df_imdb_main[row,9]);
+      isAdult <- as.character(df_imdb_main[row,5]);
+      releaseYear <- as.integer(df_imdb_main[row,6]);
+    },
+  error=function(e)
+    {
+      imdb_id <- NA;
+      primaryTitle <- NA;
+      genres <- NA;
+      isAdult <- NA;
+      releaseYear <-NA;
+    }
+  )
+  
+  #Si la informació base de IMDB és correcta processem la resta de datasets
+  if (!is.na(imdb_id))
+  {
+    
+    #Busca ID IMDB a IMDB_ratings
+    tryCatch (
+      {
+        df <- df_imdb_ratings[which(df_imdb_ratings$tconst == imdb_id), ];
+        tryCatch (averageRating <- as.double(df["averageRating"]), error=function(e) {averageRating<-NA});
+        tryCatch (numVotes <- as.integer(df["numVotes"]), error=function(e) {numVotes<-NA});
+      },
+    error = function(e)
+      { 
+        averageRating <- NA;
+        numVotes <- NA;
+      }
+    )
+
+    #Busca ID IMDB a TMDB (cleaned)
+    tryCatch (
+      {
+        df <- df_moviedb_cleaned[which(df_moviedb_cleaned$imdb_id == imdb_id), ];
+        tmdb_id <- as.integer(df[1]);
+        tryCatch (
+          {
+            rdt <- unlist(gregexpr(pattern ="[0-9]{4}-[0-9]{2}-[0-9]{2}",as.character(df["release_date"])));
+            if (rdt[1]>0)
+              releaseDate <- as.Date(as.character(df["release_date"]))
+            else
+              releaseDate <- as.Date(as.character(df["release_date"]), format="%d/%m/%Y");
+          }, error=function(e) {release_date <- NA}
+        );
+        tryCatch(overview <- as.character(df["overview"]), error=function(e) {overview<-NA});
+        tryCatch(tagline <- as.character(df["tagline"]), error=function(e) {tagline<-NA});
+        tryCatch(budget <- as.double(df["budget"]), error=function(e) {budget<-NA});
+        tryCatch(revenue1 <- as.double(df["revenue"]), error=function(e) {revenue1<-NA});
+      },
+    error = function(e)
+      { 
+        tmdb_id <- NA;
+        releaseDate <- NA;
+        overview <- NA;
+        tagline <- NA;
+        budget <- NA;
+        revenue1<-NA;
+      }
+    )
+
+    #Busca ID IMDB a BoxOffice Revenues
+    tryCatch (
+      {
+        df <- df_boxoffice_max[which(df_boxoffice_max$movie_name == primaryTitle), ];
+        revenue2 <- as.double(df["max.gross_to_date"]);
+      },
+    error = function(e)
+      { 
+        revenue2 <-NA;
+      }
+    )
+    
+    #Si no trobem un "Revenue" vàlid de BoxOffice agafem el de TMDB
+    revenue<-ifelse(!is.na(revenue2),revenue2,revenue1);
+    #Determinem que el primer gènere de la llista és el principal per simplificar l'anàlisi posterior
+    pos <- unlist(gregexpr(pattern =",",genres))
+    if ( pos>1)
+    {
+      mainGenre <- substr(genres,1,pos-1);
+    }
+    
+    #Filtrem el dataframe resultant per no considerar valors NA en columnes essencials
+    if (!is.na(revenue) & !is.na(budget) & !is.na(averageRating) & !is.na(numVotes) & !is.na(releaseDate))
+    {
+      #Inserció de fila al dataframe unificat
+      dfr[nrow(dfr)+1,] <- list(imdb_id, tmdb_id, primaryTitle, mainGenre, genres, isAdult, 
+          releaseYear, releaseDate, 
+          ifelse(overview=="character(0)" | is.na(overview),"-",overview), 
+          ifelse(tagline=="character(0)" | is.na(tagline),"-",tagline), 
+          budget, revenue, averageRating, numVotes);
+    }    
+  }
+  
+}
+
+#Generació del dataset d'anàlisi un cop efectuades les neteges i validacions corresponents
+head(dfr);
+write.table(dfr, file="MoviesInfo.tsv", row.names=FALSE, col.names=TRUE, sep="\t");
+
+```
+
